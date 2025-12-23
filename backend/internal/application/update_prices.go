@@ -24,22 +24,36 @@ func NewUpdatePricesUseCase(provider domain.PriceProvider, repo domain.ItemRepos
 // Execute fetches latest prices and updates the repository
 func (uc *UpdatePricesUseCase) Execute(ctx context.Context) error {
 	// Fetch latest prices from provider
-	prices, err := uc.provider.FetchLatestPrices(ctx)
+	snapshots, err := uc.provider.FetchLatestPrices(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Convert map to ItemPrice slice
-	items := make([]domain.ItemPrice, 0, len(prices))
+	items := make([]domain.ItemPrice, 0, len(snapshots))
 	now := time.Now()
 
-	for itemID, price := range prices {
+	for itemID, snap := range snapshots {
+		// choose a representative price; we use High as current price
+		price := snap.High
+		if price == 0 {
+			price = snap.Low
+		}
+
+		// Skip entries with no price info
+		if price == 0 {
+			continue
+		}
+
 		// Get existing item to preserve name and averages
 		existing, _ := uc.repo.GetItemByID(ctx, itemID)
-		
+
 		item := domain.ItemPrice{
 			ItemID:    itemID,
 			Price:     price,
+			High:      snap.High,
+			Low:       snap.Low,
+			Volume:    snap.Volume,
 			UpdatedAt: now,
 		}
 
@@ -61,4 +75,3 @@ func (uc *UpdatePricesUseCase) Execute(ctx context.Context) error {
 
 	return uc.repo.SavePrices(ctx, items)
 }
-
