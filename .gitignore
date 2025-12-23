@@ -1,0 +1,67 @@
+# OSRS Good to Flip - Git Ignore
+
+# Backend (Go)
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/go.sum
+backend/.vscode/
+backend/.idea/
+backend/*.test
+backend/*.out
+backend/coverage.txt
+backend/coverage.html
+
+# Frontend (Next.js)
+frontend/.next/
+frontend/out/
+frontend/build
+frontend/dist
+frontend/.env*.local
+frontend/node_modules/
+frontend/.pnp
+frontend.pnp.js
+frontend/.vscode/
+frontend/.idea/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.vercel
+frontend/.swc
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Environment variables
+.env
+.env.local
+.env*.local
+.env.production
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Logs
+*.log
+logs/
+
