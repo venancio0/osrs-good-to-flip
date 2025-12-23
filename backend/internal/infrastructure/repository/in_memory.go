@@ -7,14 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // InMemoryRepository implements ItemRepository using in-memory storage
 type InMemoryRepository struct {
-	mu         sync.RWMutex
-	items      map[int]*domain.ItemPrice
-	history    map[int][]domain.PriceHistory // itemID -> []PriceHistory
+	mu      sync.RWMutex
+	items   map[int]*domain.ItemPrice
+	history map[int][]domain.PriceHistory // itemID -> []PriceHistory
 }
 
 // NewInMemoryRepository creates a new in-memory repository with mock data
@@ -96,7 +96,7 @@ func (r *InMemoryRepository) GetAllItems(ctx context.Context) ([]domain.ItemPric
 // initializeMockData populates the repository with mock OSRS items
 func (r *InMemoryRepository) initializeMockData() {
 	now := time.Now()
-	
+
 	// Helper function to generate realistic high/low prices and volume
 	generateItem := func(itemID int, name string, price, avg24h, avg7d int, trend domain.TrendType) domain.ItemPrice {
 		// High is typically 1-3% above average, Low is 1-3% below
@@ -218,23 +218,23 @@ func (r *InMemoryRepository) initializeMockHistory() {
 		// Create a more realistic price progression
 		for i := 6; i >= 0; i-- {
 			date := now.AddDate(0, 0, -i)
-			
+
 			// Create variation: start from a base and trend towards current price
 			// This creates a more realistic progression
 			daysAgo := float64(6 - i)
 			progress := daysAgo / 6.0 // 0.0 (7 days ago) to 1.0 (today)
-			
+
 			// Start price is slightly different from current (simulating past prices)
 			startPrice := float64(basePrice) * 0.92
 			endPrice := float64(basePrice)
-			
+
 			// Linear interpolation with small random variation
 			price := startPrice + (endPrice-startPrice)*progress
-			
+
 			// Add small random variation (±2%)
 			variation := 1.0 + (float64((itemID+i)%5)-2.0)*0.01
 			price = price * variation
-			
+
 			entry := domain.PriceHistory{
 				ItemID:    itemID,
 				Price:     int(price),
@@ -247,4 +247,3 @@ func (r *InMemoryRepository) initializeMockHistory() {
 		r.history[itemID] = history
 	}
 }
-

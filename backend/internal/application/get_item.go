@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // GetItemUseCase handles retrieving an item by ID
@@ -32,4 +32,3 @@ func (uc *GetItemUseCase) Execute(ctx context.Context, idStr string) (*domain.It
 
 	return item, nil
 }
-

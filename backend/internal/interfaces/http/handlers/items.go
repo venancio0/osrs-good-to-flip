@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
 	"github.com/go-chi/chi/v5"
-	"github.com/gabv/osrs-good-to-flip/internal/application"
 )
 
 // ItemsHandler handles item-related HTTP requests
@@ -87,4 +87,3 @@ func respondWithJSON(w http.ResponseWriter, statusCode int, payload interface{})
 func respondWithError(w http.ResponseWriter, statusCode int, message string) {
 	respondWithJSON(w, statusCode, map[string]string{"error": message})
 }
-
