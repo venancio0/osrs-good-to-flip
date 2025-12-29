@@ -24,6 +24,8 @@ type ItemRepository interface {
 	GetItemByID(ctx context.Context, id int) (*ItemPrice, error)
 	SearchItems(ctx context.Context, query string) ([]ItemPrice, error)
 	GetAllItems(ctx context.Context) ([]ItemPrice, error)
+	SearchItemsPaginated(ctx context.Context, query string, params PaginationParams) (PaginatedResult[ItemPrice], error)
+	GetAllItemsPaginated(ctx context.Context, params PaginationParams) (PaginatedResult[ItemPrice], error)
 	SavePriceHistory(ctx context.Context, itemID int, price int, date time.Time) error
 	GetPriceHistory(ctx context.Context, itemID int, days int) ([]PriceHistory, error)
 }

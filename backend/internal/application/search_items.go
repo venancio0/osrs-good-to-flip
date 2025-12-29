@@ -3,7 +3,7 @@ package application
 import (
 	"context"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/internal/domain"
 )
 
 // SearchItemsUseCase handles searching items by name
@@ -29,4 +29,13 @@ func (uc *SearchItemsUseCase) Execute(ctx context.Context, query string) ([]doma
 	}
 
 	return items, nil
+}
+
+// ExecutePaginated searches for items with pagination
+func (uc *SearchItemsUseCase) ExecutePaginated(ctx context.Context, query string, params domain.PaginationParams) (domain.PaginatedResult[domain.ItemPrice], error) {
+	if query == "" {
+		return uc.repo.GetAllItemsPaginated(ctx, params)
+	}
+
+	return uc.repo.SearchItemsPaginated(ctx, query, params)
 }

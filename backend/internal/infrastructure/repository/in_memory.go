@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/internal/domain"
 )
 
 // InMemoryRepository implements ItemRepository using in-memory storage
@@ -91,6 +91,96 @@ func (r *InMemoryRepository) GetAllItems(ctx context.Context) ([]domain.ItemPric
 	}
 
 	return results, nil
+}
+
+// GetAllItemsPaginated returns paginated items
+func (r *InMemoryRepository) GetAllItemsPaginated(ctx context.Context, params domain.PaginationParams) (domain.PaginatedResult[domain.ItemPrice], error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	allItems := make([]domain.ItemPrice, 0, len(r.items))
+	for _, item := range r.items {
+		itemCopy := *item
+		allItems = append(allItems, itemCopy)
+	}
+
+	total := len(allItems)
+	offset := params.Offset()
+	end := offset + params.Limit
+
+	if offset >= total {
+		return domain.PaginatedResult[domain.ItemPrice]{
+			Data:       []domain.ItemPrice{},
+			Total:      total,
+			Page:       params.Page,
+			Limit:      params.Limit,
+			TotalPages: (total + params.Limit - 1) / params.Limit,
+		}, nil
+	}
+
+	if end > total {
+		end = total
+	}
+
+	totalPages := (total + params.Limit - 1) / params.Limit
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	return domain.PaginatedResult[domain.ItemPrice]{
+		Data:       allItems[offset:end],
+		Total:      total,
+		Page:       params.Page,
+		Limit:      params.Limit,
+		TotalPages: totalPages,
+	}, nil
+}
+
+// SearchItemsPaginated returns paginated search results
+func (r *InMemoryRepository) SearchItemsPaginated(ctx context.Context, query string, params domain.PaginationParams) (domain.PaginatedResult[domain.ItemPrice], error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	queryLower := strings.ToLower(query)
+	allResults := make([]domain.ItemPrice, 0)
+
+	for _, item := range r.items {
+		if strings.Contains(strings.ToLower(item.Name), queryLower) {
+			itemCopy := *item
+			allResults = append(allResults, itemCopy)
+		}
+	}
+
+	total := len(allResults)
+	offset := params.Offset()
+	end := offset + params.Limit
+
+	if offset >= total {
+		return domain.PaginatedResult[domain.ItemPrice]{
+			Data:       []domain.ItemPrice{},
+			Total:      total,
+			Page:       params.Page,
+			Limit:      params.Limit,
+			TotalPages: (total + params.Limit - 1) / params.Limit,
+		}, nil
+	}
+
+	if end > total {
+		end = total
+	}
+
+	totalPages := (total + params.Limit - 1) / params.Limit
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	return domain.PaginatedResult[domain.ItemPrice]{
+		Data:       allResults[offset:end],
+		Total:      total,
+		Page:       params.Page,
+		Limit:      params.Limit,
+		TotalPages: totalPages,
+	}, nil
 }
 
 // initializeMockData populates the repository with mock OSRS items

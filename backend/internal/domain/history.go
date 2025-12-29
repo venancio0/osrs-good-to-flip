@@ -13,7 +13,6 @@ type PriceHistory struct {
 // PriceHistoryEntry represents a single entry in the price history
 // Used for API responses with formatted date
 type PriceHistoryEntry struct {
-	Date  string `json:"date"`  // ISO 8601 format
+	Date  string `json:"date"` // ISO 8601 format
 	Price int    `json:"price"`
 }
-

@@ -7,8 +7,8 @@ import (
 
 // CacheEntry represents a cached value with expiration
 type CacheEntry struct {
-	Value      interface{}
-	ExpiresAt  time.Time
+	Value     interface{}
+	ExpiresAt time.Time
 }
 
 // MemoryCache is a thread-safe in-memory cache with TTL
@@ -92,4 +92,3 @@ func (c *MemoryCache) cleanup() {
 		c.mu.Unlock()
 	}
 }
-

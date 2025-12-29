@@ -18,8 +18,7 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
-		"status": "ok",
+		"status":  "ok",
 		"service": "osrs-good-to-flip",
 	})
 }
-

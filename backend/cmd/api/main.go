@@ -7,14 +7,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
-	osrsclient "github.com/gabv/osrs-good-to-flip/backend/internal/infrastructure/osrs"
-	"github.com/gabv/osrs-good-to-flip/backend/internal/infrastructure/repository"
-	httpInterface "github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http"
-	"github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http/handlers"
+	"github.com/gabv/osrs-good-to-flip/internal/application"
+	osrsclient "github.com/gabv/osrs-good-to-flip/internal/infrastructure/osrs"
+	"github.com/gabv/osrs-good-to-flip/internal/infrastructure/repository"
+	"github.com/gabv/osrs-good-to-flip/internal/infrastructure/worker"
+	httpInterface "github.com/gabv/osrs-good-to-flip/internal/interfaces/http"
+	"github.com/gabv/osrs-good-to-flip/internal/interfaces/http/handlers"
 )
 
 func main() {
@@ -53,11 +55,22 @@ func main() {
 		}
 	}()
 
-	// Run initial price update (optional, for future use)
+	// Run initial price update
 	ctx := context.Background()
 	if err := updatePricesUseCase.Execute(ctx); err != nil {
 		log.Printf("Warning: Failed to update prices: %v", err)
 	}
+
+	// Start price updater worker (updates every 5 minutes)
+	updateInterval := 5 * time.Minute
+	if envInterval := os.Getenv("PRICE_UPDATE_INTERVAL_MIN"); envInterval != "" {
+		if minutes, err := strconv.Atoi(envInterval); err == nil && minutes > 0 {
+			updateInterval = time.Duration(minutes) * time.Minute
+		}
+	}
+
+	priceWorker := worker.NewPriceUpdaterWorker(updatePricesUseCase, updateInterval)
+	priceWorker.Start()
 
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
@@ -66,6 +79,10 @@ func main() {
 
 	log.Println("Shutting down server...")
 
+	// Stop price worker first
+	priceWorker.Stop()
+
+	// Shutdown HTTP server
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

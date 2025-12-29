@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/internal/domain"
 )
 
 // UpdatePricesUseCase handles updating item prices

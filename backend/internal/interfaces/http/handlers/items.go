@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
+	"github.com/gabv/osrs-good-to-flip/internal/application"
+	"github.com/gabv/osrs-good-to-flip/internal/domain"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -32,13 +34,33 @@ func NewItemsHandler(
 func (h *ItemsHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 
-	items, err := h.searchItemsUseCase.Execute(r.Context(), query)
+	// Parse pagination params
+	page := parseIntQuery(r, "page", 1)
+	limit := parseIntQuery(r, "limit", 20)
+	params := domain.NewPaginationParams(page, limit)
+
+	// Use paginated version
+	result, err := h.searchItemsUseCase.ExecutePaginated(r.Context(), query, params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to fetch items")
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, items)
+	respondWithJSON(w, http.StatusOK, result)
+}
+
+// parseIntQuery parses an integer query parameter with a default value
+func parseIntQuery(r *http.Request, key string, defaultValue int) int {
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	var result int
+	if _, err := fmt.Sscanf(value, "%d", &result); err != nil {
+		return defaultValue
+	}
+	return result
 }
 
 // GetItemByID handles GET /items/{id}

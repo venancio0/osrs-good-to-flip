@@ -26,9 +26,28 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
   return response.json();
 }
 
-export async function getItems(query?: string): Promise<ItemPrice[]> {
-  const endpoint = query ? `/items?q=${encodeURIComponent(query)}` : "/items";
-  return fetchAPI<ItemPrice[]>(endpoint);
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+export async function getItems(
+  query?: string,
+  page: number = 1,
+  limit: number = 20
+): Promise<PaginatedResponse<ItemPrice>> {
+  const params = new URLSearchParams();
+  if (query) {
+    params.append("q", query);
+  }
+  params.append("page", page.toString());
+  params.append("limit", limit.toString());
+  
+  const endpoint = `/items?${params.toString()}`;
+  return fetchAPI<PaginatedResponse<ItemPrice>>(endpoint);
 }
 
 export async function getItemById(id: string): Promise<ItemPrice> {

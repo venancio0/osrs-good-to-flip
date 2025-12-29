@@ -6,10 +6,10 @@ import "time"
 type ItemPrice struct {
 	ItemID    int       `json:"item_id"`
 	Name      string    `json:"name"`
-	Price     int       `json:"price"`      // Current average price
-	High      int       `json:"high"`       // Best buy price
-	Low       int       `json:"low"`        // Best sell price
-	Volume    int       `json:"volume"`     // Trading volume
+	Price     int       `json:"price"`  // Current average price
+	High      int       `json:"high"`   // Best buy price
+	Low       int       `json:"low"`    // Best sell price
+	Volume    int       `json:"volume"` // Trading volume
 	Avg24h    int       `json:"avg_24h"`
 	Avg7d     int       `json:"avg_7d"`
 	Trend     TrendType `json:"trend"`
@@ -63,4 +63,3 @@ func CalculateExpectedProfit(buyPrice, sellPrice int) int {
 	tax := CalculateGETax(sellPrice)
 	return sellPrice - buyPrice - tax
 }
-

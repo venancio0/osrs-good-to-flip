@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/internal/domain"
 )
 
 // GetItemUseCase handles retrieving an item by ID

@@ -1,4 +1,4 @@
-module github.com/gabv/osrs-good-to-flip/backend
+module github.com/gabv/osrs-good-to-flip
 
 go 1.21
 

@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http/handlers"
+	"github.com/gabv/osrs-good-to-flip/internal/interfaces/http/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
