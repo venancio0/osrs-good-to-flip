@@ -17,13 +17,34 @@ export interface ItemPrice {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`);
+  const url = `${API_URL}${endpoint}`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Add credentials for CORS if needed
+      credentials: 'omit',
+    });
 
-  if (!response.ok) {
-    throw new Error(`API error: ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API error (${response.status}): ${response.statusText}. ${errorText}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error(
+        `Network error: Unable to reach API at ${url}. Check CORS configuration and API URL.`
+      );
+    }
+    throw error;
   }
-
-  return response.json();
 }
 
 export interface PaginatedResponse<T> {
