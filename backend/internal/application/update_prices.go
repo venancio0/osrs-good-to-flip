@@ -2,6 +2,8 @@ package application
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
@@ -27,6 +29,14 @@ func (uc *UpdatePricesUseCase) Execute(ctx context.Context) error {
 	snapshots, err := uc.provider.FetchLatestPrices(ctx)
 	if err != nil {
 		return err
+	}
+
+	// Fetch item names mapping (only if we have new items)
+	itemNames, err := uc.provider.FetchItemNames(ctx)
+	if err != nil {
+		log.Printf("Warning: Failed to fetch item names: %v", err)
+		// Continue without names - will use existing names or fallback
+		itemNames = make(map[int]string)
 	}
 
 	// Convert map to ItemPrice slice
@@ -58,13 +68,21 @@ func (uc *UpdatePricesUseCase) Execute(ctx context.Context) error {
 		}
 
 		if existing != nil {
+			// Preserve existing name and averages
 			item.Name = existing.Name
 			item.Avg24h = existing.Avg24h
 			item.Avg7d = existing.Avg7d
 			// Calculate trend based on current price vs 24h average
 			item.Trend = domain.CalculateTrend(price, existing.Avg24h)
 		} else {
-			// For new items, set defaults
+			// For new items, try to get name from mapping
+			if name, ok := itemNames[itemID]; ok && name != "" {
+				item.Name = name
+			} else {
+				// Fallback: use placeholder name
+				item.Name = fmt.Sprintf("Item %d", itemID)
+			}
+			// Set defaults for new items
 			item.Avg24h = price
 			item.Avg7d = price
 			item.Trend = domain.TrendFlat

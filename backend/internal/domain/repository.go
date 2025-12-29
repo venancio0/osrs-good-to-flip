@@ -16,6 +16,7 @@ type PriceSnapshot struct {
 // PriceProvider defines the interface for fetching prices from external sources
 type PriceProvider interface {
 	FetchLatestPrices(ctx context.Context) (map[int]PriceSnapshot, error)
+	FetchItemNames(ctx context.Context) (map[int]string, error)
 }
 
 // ItemRepository defines the interface for item data operations

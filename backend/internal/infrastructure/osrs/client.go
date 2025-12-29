@@ -24,6 +24,12 @@ type OsrsWikiClient struct {
 	cachedLatest map[int]domain.PriceSnapshot
 	cachedAt     time.Time
 	cacheTTL     time.Duration
+
+	// Cache for item names mapping (longer TTL since it changes rarely)
+	namesCacheMu sync.RWMutex
+	cachedNames  map[int]string
+	namesCachedAt time.Time
+	namesCacheTTL time.Duration
 }
 
 // latestResponse mirrors the /latest payload.
@@ -33,6 +39,12 @@ type latestResponse struct {
 		Low  int `json:"low"`
 		// highTime, lowTime omitted for now
 	} `json:"data"`
+}
+
+// mappingResponse mirrors the /mapping payload.
+type mappingResponse []struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // NewOsrsWikiClient creates a new OSRS Wiki client with sane defaults.
@@ -61,11 +73,20 @@ func NewOsrsWikiClient() *OsrsWikiClient {
 		}
 	}
 
+	// Names cache TTL - longer since mapping changes rarely (default: 1 hour)
+	namesCacheTTL := 1 * time.Hour
+	if v := os.Getenv("OSRS_WIKI_NAMES_CACHE_TTL_SEC"); v != "" {
+		if s, err := strconv.Atoi(v); err == nil && s > 0 {
+			namesCacheTTL = time.Duration(s) * time.Second
+		}
+	}
+
 	return &OsrsWikiClient{
-		httpClient: &http.Client{Timeout: timeout},
-		baseURL:    baseURL,
-		userAgent:  userAgent,
-		cacheTTL:   cacheTTL,
+		httpClient:    &http.Client{Timeout: timeout},
+		baseURL:       baseURL,
+		userAgent:     userAgent,
+		cacheTTL:      cacheTTL,
+		namesCacheTTL: namesCacheTTL,
 	}
 }
 
@@ -109,6 +130,69 @@ func (c *OsrsWikiClient) FetchLatestPrices(ctx context.Context) (map[int]domain.
 
 	c.setCache(result)
 	return result, nil
+}
+
+// FetchItemNames fetches item ID to name mapping from OSRS Wiki API
+func (c *OsrsWikiClient) FetchItemNames(ctx context.Context) (map[int]string, error) {
+	// Check cache first
+	if data, ok := c.getCachedNames(); ok {
+		return data, nil
+	}
+
+	url := fmt.Sprintf("%s/mapping", c.baseURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", c.userAgent)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("osrs wiki mapping: status %d", resp.StatusCode)
+	}
+
+	var payload mappingResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return nil, err
+	}
+
+	result := make(map[int]string, len(payload))
+	for _, item := range payload {
+		result[item.ID] = item.Name
+	}
+
+	// Cache the result
+	c.setCachedNames(result)
+	return result, nil
+}
+
+func (c *OsrsWikiClient) getCachedNames() (map[int]string, bool) {
+	c.namesCacheMu.RLock()
+	defer c.namesCacheMu.RUnlock()
+	if c.cachedNames == nil {
+		return nil, false
+	}
+	if time.Since(c.namesCachedAt) > c.namesCacheTTL {
+		return nil, false
+	}
+	// return a copy to avoid external mutation
+	out := make(map[int]string, len(c.cachedNames))
+	for k, v := range c.cachedNames {
+		out[k] = v
+	}
+	return out, true
+}
+
+func (c *OsrsWikiClient) setCachedNames(data map[int]string) {
+	c.namesCacheMu.Lock()
+	defer c.namesCacheMu.Unlock()
+	c.cachedNames = data
+	c.namesCachedAt = time.Now()
 }
 
 func (c *OsrsWikiClient) getCached() (map[int]domain.PriceSnapshot, bool) {

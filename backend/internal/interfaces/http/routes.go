@@ -25,10 +25,10 @@ func SetupRoutes(
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	
+
 	// Security headers middleware
 	r.Use(securityHeadersMiddleware)
-	
+
 	// Rate limiting middleware
 	r.Use(rateLimitMiddleware())
 
@@ -104,25 +104,25 @@ func securityHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// HSTS - Force HTTPS
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
-		
+
 		// Prevent MIME type sniffing
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		
+
 		// Prevent clickjacking
 		w.Header().Set("X-Frame-Options", "DENY")
-		
+
 		// XSS Protection
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
-		
+
 		// Referrer Policy
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-		
+
 		// Content Security Policy (relaxed for API)
 		w.Header().Set("Content-Security-Policy", "default-src 'self'")
-		
+
 		// Permissions Policy
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -136,7 +136,7 @@ func rateLimitMiddleware() func(http.Handler) http.Handler {
 			requestsPerMinute = rate
 		}
 	}
-	
+
 	return httprate.Limit(
 		requestsPerMinute,
 		1*time.Minute,
