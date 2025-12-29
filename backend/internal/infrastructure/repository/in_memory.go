@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // InMemoryRepository implements ItemRepository using in-memory storage

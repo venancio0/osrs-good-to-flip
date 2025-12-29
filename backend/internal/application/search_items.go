@@ -3,7 +3,7 @@ package application
 import (
 	"context"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // SearchItemsUseCase handles searching items by name

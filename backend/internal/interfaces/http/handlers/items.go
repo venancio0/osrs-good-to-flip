@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gabv/osrs-good-to-flip/internal/application"
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 	"github.com/go-chi/chi/v5"
 )
 

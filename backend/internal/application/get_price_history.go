@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // GetPriceHistoryUseCase handles retrieving price history for an item

@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/domain"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/domain"
 )
 
 // OsrsWikiClient implements PriceProvider for OSRS Wiki API.

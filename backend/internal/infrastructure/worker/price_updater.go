@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/application"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
 )
 
 // PriceUpdaterWorker handles periodic price updates

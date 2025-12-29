@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gabv/osrs-good-to-flip/internal/application"
-	osrsclient "github.com/gabv/osrs-good-to-flip/internal/infrastructure/osrs"
-	"github.com/gabv/osrs-good-to-flip/internal/infrastructure/repository"
-	"github.com/gabv/osrs-good-to-flip/internal/infrastructure/worker"
-	httpInterface "github.com/gabv/osrs-good-to-flip/internal/interfaces/http"
-	"github.com/gabv/osrs-good-to-flip/internal/interfaces/http/handlers"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/application"
+	osrsclient "github.com/gabv/osrs-good-to-flip/backend/internal/infrastructure/osrs"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/infrastructure/repository"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/infrastructure/worker"
+	httpInterface "github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http"
+	"github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http/handlers"
 )
 
 func main() {
