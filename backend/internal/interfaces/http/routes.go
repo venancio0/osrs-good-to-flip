@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http/handlers"
 	"github.com/go-chi/chi/v5"
@@ -23,8 +24,18 @@ func SetupRoutes(
 	r.Use(middleware.Recoverer)
 
 	// CORS middleware for frontend
+	allowedOrigins := []string{"http://localhost:3000", "http://localhost:3001"}
+
+	// Add Vercel preview/production URLs if provided
+	if vercelURL := os.Getenv("VERCEL_URL"); vercelURL != "" {
+		allowedOrigins = append(allowedOrigins, "https://"+vercelURL)
+	}
+	if vercelProdURL := os.Getenv("VERCEL_PRODUCTION_URL"); vercelProdURL != "" {
+		allowedOrigins = append(allowedOrigins, "https://"+vercelProdURL)
+	}
+
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:3001"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},

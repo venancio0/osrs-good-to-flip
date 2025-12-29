@@ -1,0 +1,7 @@
+backend/
+.git/
+node_modules/
+*.md
+!README.md
+.env*.local
+

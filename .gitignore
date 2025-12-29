@@ -13,6 +13,8 @@ backend/*.test
 backend/*.out
 backend/coverage.txt
 backend/coverage.html
+backend/app
+backend/cmd/api/api
 
 # Frontend (Next.js)
 frontend/.next/
@@ -65,3 +67,4 @@ Thumbs.db
 *.log
 logs/
 
+backend/app
