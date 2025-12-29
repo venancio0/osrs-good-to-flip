@@ -67,15 +67,25 @@ Configure no painel do Render:
 
 ## CORS
 
-O backend já está configurado para aceitar requisições do Vercel. Se necessário, adicione o domínio do Vercel no arquivo `routes.go`:
+O backend está configurado para aceitar requisições de:
+- `http://localhost:3000` e `http://localhost:3001` (desenvolvimento)
+- `https://osrs-good-to-flip.vercel.app` (produção)
+- Qualquer domínio `*.vercel.app` (preview deployments do Vercel)
 
-```go
-AllowedOrigins: []string{
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://seu-projeto.vercel.app", // Adicione aqui
-},
+### Configuração Adicional (Opcional)
+
+Se precisar adicionar outros domínios, configure a variável de ambiente `ALLOWED_ORIGINS` no Render:
+```
+ALLOWED_ORIGINS=https://meu-dominio.com,https://outro-dominio.com
 ```
 
-Ou use variável de ambiente para configurar dinamicamente.
+### Aplicar Mudanças no Render
+
+Após fazer push das mudanças:
+1. O Render detectará automaticamente as mudanças no GitHub
+2. Fará rebuild do backend automaticamente
+3. Aguarde o deploy completar (geralmente 2-5 minutos)
+
+Ou force um rebuild manualmente:
+- No painel do Render, vá em "Manual Deploy" → "Deploy latest commit"
 
