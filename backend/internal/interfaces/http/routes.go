@@ -3,11 +3,14 @@ package http
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gabv/osrs-good-to-flip/backend/internal/interfaces/http/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 )
 
 // SetupRoutes configures all HTTP routes
@@ -22,6 +25,12 @@ func SetupRoutes(
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	
+	// Security headers middleware
+	r.Use(securityHeadersMiddleware)
+	
+	// Rate limiting middleware
+	r.Use(rateLimitMiddleware())
 
 	// CORS middleware for frontend
 	allowedOrigins := []string{
@@ -88,4 +97,49 @@ func SetupRoutes(
 	})
 
 	return r
+}
+
+// securityHeadersMiddleware adds security headers to all responses
+func securityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// HSTS - Force HTTPS
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+		
+		// Prevent MIME type sniffing
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		
+		// Prevent clickjacking
+		w.Header().Set("X-Frame-Options", "DENY")
+		
+		// XSS Protection
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		
+		// Referrer Policy
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		
+		// Content Security Policy (relaxed for API)
+		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		
+		// Permissions Policy
+		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
+// rateLimitMiddleware configures rate limiting based on environment variables
+func rateLimitMiddleware() func(http.Handler) http.Handler {
+	// Default: 100 requests per minute per IP
+	requestsPerMinute := 100
+	if envRate := os.Getenv("RATE_LIMIT_REQUESTS_PER_MINUTE"); envRate != "" {
+		if rate, err := strconv.Atoi(envRate); err == nil && rate > 0 {
+			requestsPerMinute = rate
+		}
+	}
+	
+	return httprate.Limit(
+		requestsPerMinute,
+		1*time.Minute,
+		httprate.WithKeyFuncs(httprate.KeyByIP, httprate.KeyByEndpoint),
+	)
 }
